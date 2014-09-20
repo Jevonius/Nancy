@@ -37,7 +37,7 @@
         public Response NegotiateResponse(dynamic routeResult, NancyContext context)
         {
             Response response;
-            if (TryCastResultToResponse(routeResult, out response))
+            if (Response.TryCast(routeResult, out response))
             {
                 context.WriteTraceLog(sb =>
                     sb.AppendLine("[DefaultResponseNegotiator] Processing as real response"));
@@ -65,26 +65,6 @@
             }
 
             return CreateResponse(compatibleHeaders, negotiationContext, context);
-        }
-
-        /// <summary>
-        /// Tries to cast the dynamic result to a <see cref="Response"/>.
-        /// </summary>
-        /// <param name="routeResult">The result.</param>
-        /// <param name="response">The response.</param>
-        /// <returns><c>true</c> if the result is a <see cref="Response"/>, <c>false</c> otherwise.</returns>
-        private static bool TryCastResultToResponse(dynamic routeResult, out Response response)
-        {
-            try
-            {
-                response = (Response) routeResult;
-                return true;
-            }
-            catch
-            {
-                response = null;
-                return false;
-            }
         }
 
         /// <summary>

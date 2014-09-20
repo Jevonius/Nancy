@@ -188,6 +188,33 @@ namespace Nancy
         }
 
         /// <summary>
+        /// Attempts to cast a dynamic object to a <see cref="Response"/> instance.
+        /// </summary>
+        /// <param name="obj">The source <see cref="dynamic"/> object that is being cast from.</param>
+        /// <param name="response">The resulting <see cref="Response"/> instance.</param>
+        /// <returns><c>true</c> if the result is a <see cref="Response"/>, <c>false</c> otherwise.</returns>
+        public static bool TryCast(dynamic obj, out Response response)
+        {
+            if (
+                obj is Response
+                || obj is int
+                || obj is HttpStatusCode
+                || obj is string
+                || obj is Action<Stream>
+                || obj is DynamicDictionaryValue
+                )
+            {
+                response = obj;
+                return true;
+            }
+            else
+            {
+                response = null;
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Converts a string content value to a response action.
         /// </summary>
         /// <param name="contents">The string containing the content.</param>
