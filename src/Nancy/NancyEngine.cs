@@ -126,7 +126,7 @@
 
         public IStatusCodeHandler FindStatusCodeHandler(HttpStatusCode statusCode, NancyContext context)
         {
-            var relevantHandlers = this.statusCodeHandlers.Where(h => h.HandlesStatusCode(statusCode, context));
+            var relevantHandlers = this.statusCodeHandlers.Where(h => h.HandlesStatusCode(statusCode, context)).ToList();
             var customHandler = relevantHandlers.FirstOrDefault(h => !(h is DefaultStatusCodeHandler));
             return customHandler ?? relevantHandlers.FirstOrDefault(h => h is DefaultStatusCodeHandler);
         }
