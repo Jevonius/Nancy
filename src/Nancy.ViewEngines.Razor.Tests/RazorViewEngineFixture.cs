@@ -648,6 +648,115 @@
             output.ShouldContain(string.Format("<input value=\"{0}\" />", PHRASE));
         }
 
+        [Fact]
+        public void Should_succeed_with_ValidView()
+        {
+            // Given
+            var location = new ViewLocationResult(
+                string.Empty,
+                string.Empty,
+                "cshtml",
+                () => new StringReader(View_Valid)
+            );
+            var model = new TestModel()
+            {
+                Name = "Mickey Mouse",
+                Slug = "Slimy Slug"
+            };
+            var stream = new MemoryStream();
+
+            // When
+            var response = this.engine.RenderView(location, model, this.renderContext);
+            response.Contents.Invoke(stream);
+
+            // Then
+            var output = ReadAll(stream);
+            output.ShouldNotContain("Razor Compilation Error");
+            output.ShouldNotContain("Matthew Inman");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public void Should_fail_with_ValidView_and_null_model()
+        {
+            // Given
+            var location = new ViewLocationResult(
+                string.Empty,
+                string.Empty,
+                "cshtml",
+                () => new StringReader(View_Valid)
+            );
+            var stream = new MemoryStream();
+
+            // When
+            var response = this.engine.RenderView(location, null, this.renderContext);
+            response.Contents.Invoke(stream);
+
+            // Then
+            var output = ReadAll(stream);
+            output.ShouldContain("Razor Compilation Error");
+            output.ShouldContain("Matthew Inman");
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        }
+
+        [Fact]
+        public void Should_fail_with_CompileExceptionView()
+        {
+            // Given
+            var location = new ViewLocationResult(
+                string.Empty,
+                string.Empty,
+                "cshtml",
+                () => new StringReader(View_CompileException)
+            );
+            var stream = new MemoryStream();
+
+            // When
+            var response = this.engine.RenderView(location, null, this.renderContext);
+            response.Contents.Invoke(stream);
+
+            // Then
+            var output = ReadAll(stream);
+            output.ShouldContain("Razor Compilation Error");
+            output.ShouldContain("Matthew Inman");
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        }
+
+        [Fact]
+        public void Should_fail_with_RuntimeExceptionView()
+        {
+            // Given
+            var location = new ViewLocationResult(
+                string.Empty,
+                string.Empty,
+                "cshtml",
+                () => new StringReader(View_RuntimeException)
+            );
+            var stream = new MemoryStream();
+
+            // When
+            var response = this.engine.RenderView(location, null, this.renderContext);
+            response.Contents.Invoke(stream);
+
+            // Then
+            var output = ReadAll(stream);
+            output.ShouldContain("Razor Compilation Error");
+            output.ShouldContain("Matthew Inman");
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+        }
+
+        private const string View_CompileException = @"
+@inherits Nancy.ViewEngines.Razor.NancyRazorViewBase<Nancy.ViewEngines.Razor.Tests.NonExistentModel>
+<p>Hello! How are you today?</p>";
+        private const string View_RuntimeException = @"
+@inherits Nancy.ViewEngines.Razor.NancyRazorViewBase<Nancy.ViewEngines.Razor.Tests.TestModel>
+<p>Hello! How are you today?</p>
+<p>Did you know? 1 + 1 = @( 1/0 )</p>";
+
+        private const string View_Valid = @"
+@inherits Nancy.ViewEngines.Razor.NancyRazorViewBase<Nancy.ViewEngines.Razor.Tests.TestModel>
+<p>Hello @Model.Name! How is your Slug @Model.Slug today?</p>";
+
         private static string ReadAll(Stream stream)
         {
             stream.Position = 0;
